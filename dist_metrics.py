@@ -3,7 +3,7 @@ Collection of Distance Metrics
 """
 import numpy as np
 import scipy as sp
-import pd as pd
+import pandas as pd
 import itertools as it
 
 
@@ -26,7 +26,7 @@ def weighted_euclidean(x, y, w = None):
     y = [sqrt(i_w) * i_y for i_w, i_y in zip(w, y)]
     return euclidean(x, y)
 
-def pairwise_dist_wrapper(pair, data, w):
+def pairwise_dist_wrapper(pair, data, *arg):
 	"""
 	Return distance of two points by referring to data by 
 	index specified by pair
@@ -35,6 +35,7 @@ def pairwise_dist_wrapper(pair, data, w):
 		data = data.as_matrix()
 	a = data[pair[0], :]
 	b = data[pair[1], :]
+	w = arg[0]
 	return weighted_euclidean(a, b, w)
 
 def all_pairwise_dist(pair_list, data, w):
@@ -50,6 +51,14 @@ def sum_grouped_dist(pair_list, data, w):
 	Return the sum of distance
 	"""
 	return sum(all_pairwise_dist(pair_list, data, w))
+
+def squared_sum_grouped_dist(pair_list, data, w):
+	"""
+	Return the sum of squared distance
+	"""
+	dist = all_pairwise_dist(pair_list, data, w)
+	dist_squared = [ i * i for i in dist]
+	return sum(dist_squared)
 
 def objective_func(w):
     return sum_grouped_dist(sim_pairs, sample_data, w = w)
