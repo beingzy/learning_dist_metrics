@@ -55,9 +55,3 @@ def squared_sum_grouped_dist(pair_list, data, w):
 	dist = all_pairwise_dist(pair_list, data, w)
 	dist_squared = [ i * i for i in dist]
 	return sum(dist_squared)
-
-def objective_func(w):
-    return sum_grouped_dist(sim_pairs, sample_data, w = w)
-
-def constraint_func(w):
-    return sum_grouped_dist(diff_pairs, sample_data, w = w)
