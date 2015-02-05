@@ -1,5 +1,8 @@
 """
 Learning Distance Metrics Algorithm
+
+Author: Yi Zhang <beingzy@gmail.com>
+Create Date: Feb/04/2015
 """
 import time
 import numpy as np 
@@ -53,7 +56,7 @@ class LDM(object):
         self._fit(X, S, D)
         return self 
 
-    def fit_transform(self, X):
+    def fit_transform(self, X, S, D):
     	"""Fit the model with X, S, D and conduct transformation on X
 
     	Parameters:
@@ -67,7 +70,9 @@ class LDM(object):
     	X_new: {marix-like, np.array}, shape (n_sample, n_features)
     		The return of X transformed by fitted matrix A
     	"""
-    	pass 
+    	self.fit(X, S, D)
+    	X_new = self.transform(X)
+    	return X_new
 
     def _fit(self, X, S, D):
         """Fit the model with given information: X, S, D
@@ -99,10 +104,9 @@ class LDM(object):
             return a / b
 
         start_time = time.time()
-
         fitted = minimize(objective_func, init, method="L-BFGS-B", bounds = bnds)
-
         duration = time.time() - start_time
+
         if self.report_excution_time:
             print("--- %s seconds ---" % duration)
 
@@ -125,7 +129,12 @@ class LDM(object):
     	X_new: {marix-like, np.array}, shape (n_sample, n_features)
     		The return of X transformed by fitted matrix A
     	"""
-    	pass
+    	n_sample, n_features = X.shape
+    	trans_matrix = self._transform_matrix
+    	if not len(trans_matrix) == n_features:
+    		raise ValueError(“Transformation matrix is not compatiable with X!”)
+    	X_new = self._transform_matrix * X 
+    	return X_new
 
     def get_transform_matrix(self):
     	"""Returned the fitted transformation matrix (A)
