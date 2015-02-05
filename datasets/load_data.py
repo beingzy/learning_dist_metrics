@@ -1,5 +1,9 @@
 """
 """
+from os.path import dirname
+from pandas import read_csv
+from itertools import combinations
+from random import shuffle
 
 class Bunch(dict):
     """
@@ -11,17 +15,8 @@ class Bunch(dict):
         dict.__init__(self, kwargs)
         self.__dict__ = self
 
-def get_data_home(data_home=None):
-    """
-    Return the path of data dir of this module.
 
-    By default the data dir is set to a folder named 'data'
-    in the user home folder
-	"""
-	pass
-
-
-def load_2clusters_sample100():
+def load_sample_data():
     """
     Load a datasets (nrow: 100, ncol: 4) having inheret clusters.
 
@@ -43,6 +38,34 @@ def load_2clusters_sample100():
         the dataset.
 
     Examples:
-	"""
-	module_path = dirname(__file__)
-	pass
+    """
+    file_path = dirname(__file__)
+
+    data = read_csv(file_path + '/data/sample_2_classes_100.data', header = 0)
+    data = data.as_matrix()
+    X = data[:, :-1]
+    y = data[:, -1]
+
+    idx_ones = [i for i, val in enumerate(y) if val == 1]
+    idx_zeros = [i for i, val in enumerate(y) if val == 0]
+
+    sim_pairs, diff_pairs = [], []
+
+    for i in combinations(idx_ones, 2):
+        sim_pairs.append(i)
+    
+    for i in combinations(idx_zeros, 2):
+        sim_pairs.append(i)
+    
+    for a in idx_ones:
+        for b in idx_zeros:
+            diff_pairs.append((a, b))
+    
+    shuffle(diff_pairs)
+
+    res = Bunch(
+        data = X, target = y, feat_names = ["x1", "x2", "x3"],
+        sim_pairs = sim_pairs, diff_pairs = diff_pairs
+        )
+
+    return res
