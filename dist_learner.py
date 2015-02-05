@@ -1,10 +1,11 @@
 """
 Learning Distance Metrics Algorithm
 """
-
+import time
 import numpy as np 
 import pandas as pd 
 import scipy as sp 
+from scipy.optimize import minimize
 
 from dist_metrics import weighted_euclidean
 from dist_metrics import pairwise_dist_wrapper
@@ -33,9 +34,11 @@ class LDM(object):
         over its couterpart of tarnsformed points known different
 	"""
 
-    def __init__(self, dist_func = None):
+    def __init__(self, dist_func = None, report_excution_time= True):
     	self._dist_func = dist_func
-    	self._ratio = 0
+    	self._transform_matrix = np.array([])
+    	self._ratio = 1
+    	self.report_excution_time = report_excution_time
         pass 
 
     def fit(self, X, S, D):
@@ -85,7 +88,28 @@ class LDM(object):
     	       A transformation matrix (A) 
     	_ratio: float
         """
-        pass 
+        n_sample, n_features = X.shape
+
+        bnds = [(0, None)] * n_features # boundaries
+        init = [1] * n_features # initial weights
+
+        def objective_func(w):
+            a = squared_sum_grouped_dist(S, X, w) * 1.0
+            b = squared_sum_grouped_dist(D, X, w) * 1.0
+            return a / b
+
+        start_time = time.time()
+
+        fitted = minimize(objective_func, init, method="L-BFGS-B", bounds = bnds)
+
+        duration = time.time() - start_time
+        if self.report_excution_time:
+            print("--- %s seconds ---" % duration)
+
+        self._transform_matrix = fitted.x
+        self._ratio = fitted.fun / objective_func(init)
+
+        return (self._transform_matrix, self._ratio)
 
     def transform(self, X):
     	"""Tranform X by the learned tranformation matrix (A)
@@ -103,7 +127,7 @@ class LDM(object):
     	"""
     	pass
 
-    def get_transformation_matrix(self):
+    def get_transform_matrix(self):
     	"""Returned the fitted transformation matrix (A)
 
     	Returns:
@@ -111,6 +135,7 @@ class LDM(object):
     	_trans_vec: {matrix-like, np.array}, shape(n_features, n_features)
     	       A transformation matrix (A) 
     	"""
+    	return self._transform_matrix
 
     def get_dist_func(self):
         """Returned the distance functions used in fitting model 
@@ -119,13 +144,13 @@ class LDM(object):
         --------
         func: {function} a function accept (x1, x2, *arg)
         """
-        pass 
+        return self._dist_func
 
     def get_ratio(self):
         """The ratio of aggregate metrics of similiar points 
            over the couterparts of different points
         """
-        pass self._ratio
+        return self._ratio
 
 
 
