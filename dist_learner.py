@@ -132,7 +132,7 @@ class LDM(object):
     	n_sample, n_features = X.shape
     	trans_matrix = self._transform_matrix
     	if not len(trans_matrix) == n_features:
-    		raise ValueError(“Transformation matrix is not compatiable with X!”)
+    		raise ValueError('Transformation matrix is not compatiable with X!')
     	X_new = self._transform_matrix * X 
     	return X_new
 
