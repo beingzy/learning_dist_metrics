@@ -8,6 +8,7 @@ import time
 import numpy as np 
 import pandas as pd 
 import scipy as sp 
+from itertools import combinations
 from scipy.optimize import minimize
 
 from dist_metrics import weighted_euclidean
@@ -43,7 +44,7 @@ class LDM(object):
     	self.report_excution_time = report_excution_time
         pass 
 
-    def fit(self, X, S, D):
+    def fit(self, X, S, D = None):
         """Fit the model with X and given S and D
 
         Parameters:
@@ -65,7 +66,7 @@ class LDM(object):
         self._fit(X, S, D)
         return self 
 
-    def fit_transform(self, X, S, D):
+    def fit_transform(self, X, S, D = None):
     	"""Fit the model with X, S, D and conduct transformation on X
 
     	Parameters:
@@ -83,7 +84,7 @@ class LDM(object):
     	X_new = self.transform(X)
     	return X_new
 
-    def _fit(self, X, S, D):
+    def _fit(self, X, S, D = None):
         """Fit the model with given information: X, S, D
 
         Parameters:
@@ -106,6 +107,10 @@ class LDM(object):
 
         bnds = [(0, None)] * n_features # boundaries
         init = [1] * n_features # initial weights
+
+        if D is None:
+            all_pairs = [i for i in combinations(range(n_sample), 2)]
+            D = get_exclusive_pairs(all_pairs, S)
 
         def objective_func(w):
             a = squared_sum_grouped_dist(S, X, w) * 1.0
@@ -164,7 +169,7 @@ class LDM(object):
         --------
         func: {function} a function accept (x1, x2, *arg)
         """     
-         if not self._transform_matrix is None:
+        if not self._transform_matrix is None:
             w = self._transform_matrix
             g = lambda x, y: weighted_euclidean(x = x, y = y, w = w)
         return g(x, y)
@@ -174,6 +179,41 @@ class LDM(object):
            over the couterparts of different points
         """
         return self._ratio
+
+
+
+def get_exclusive_pairs(target_pairs, reference_pairs):
+    """ Remove from target_paris the item (pairs) which
+        has matches in reference_pairs.
+
+        Parameters:
+        -----------
+        target_pairs: {list}, [(1, 2), (1, 3), ...]
+        reference_pairs: {list}, [(2, 1), (10, 11)]
+
+        Returns:
+        -------
+
+    """
+    res = list(target_pairs)
+    for i, ref_pair in enumerate(reference_pairs):
+        for j, tgt_pair in enumerate(target_pairs):
+            if set(ref_pair) == set(tgt_pair):
+                res.pop(j)
+    return res
+
+def get_unique_items(x_pairs, y_pairs):
+    """Return all item mentioned either by x_pairs
+       or y_pairs.
+    """
+    x_pairs.extend(y_pairs)
+    res = []
+    for a, b in x_pairs:
+        if not a in res:
+            res.append(a)
+        if not b in res:
+            res.append(b)
+    return res
 
 
 
