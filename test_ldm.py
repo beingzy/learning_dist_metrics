@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from dist_learner import LDM
+from ldm import LDM
 from datasets import load_sample_data
 
 

@@ -38,7 +38,6 @@ class LDM(object):
 	"""
 
     def __init__(self, dist_func = None, report_excution_time= True):
-    	self._dist_func = dist_func
     	self._transform_matrix = np.array([])
     	self._ratio = 1
     	self.report_excution_time = report_excution_time
@@ -48,10 +47,20 @@ class LDM(object):
         """Fit the model with X and given S and D
 
         Parameters:
-        -----------
+        ----------
+        X: {matrix-like, np.array}, shape (n_sample, n_features)
+            Training data, where n_samples is the number of n_samples
+            and n_features is the number of features 
+        S: {vector-like, list} a list of tuples which define a pair of
+                  data points known as similiar 
+        D: {vector-like, list} a list of tuples which define a pair of
+                  data points known as different
 
-        Retruns:
+        Returns:
         --------
+        _trans_vec: {matrix-like, np.array}, shape(n_features, n_features)
+               A transformation matrix (A) 
+        _ratio: float
         """
         self._fit(X, S, D)
         return self 
@@ -112,6 +121,7 @@ class LDM(object):
 
         self._transform_matrix = fitted.x
         self._ratio = fitted.fun / objective_func(init)
+        self._dist_func = lambda x, y: weighted_euclidean(x, y, w = w)
 
         return (self._transform_matrix, self._ratio)
 
@@ -134,6 +144,7 @@ class LDM(object):
     	if not len(trans_matrix) == n_features:
     		raise ValueError('Transformation matrix is not compatiable with X!')
     	X_new = self._transform_matrix * X 
+
     	return X_new
 
     def get_transform_matrix(self):
@@ -146,14 +157,17 @@ class LDM(object):
     	"""
     	return self._transform_matrix
 
-    def get_dist_func(self):
+    def fitted_dist_func(self, x, y):
         """Returned the distance functions used in fitting model 
 
         Returns:
         --------
         func: {function} a function accept (x1, x2, *arg)
-        """
-        return self._dist_func
+        """     
+         if not self._transform_matrix is None:
+            w = self._transform_matrix
+            g = lambda x, y: weighted_euclidean(x = x, y = y, w = w)
+        return g(x, y)
 
     def get_ratio(self):
         """The ratio of aggregate metrics of similiar points 
