@@ -87,6 +87,12 @@ class LDM(object):
     def _fit(self, X, S, D = None):
         """Fit the model with given information: X, S, D
 
+
+        Fit the learning distance metrics: (1) if only S is given,
+        all pairs of items in X but not in S are considered as in D;
+        (2) if both S and D given, items in X but neither in S nor in D
+        will be removed from fitting process.
+
         Parameters:
         ----------
         X: {matrix-like, np.array}, shape (n_sample, n_features)
@@ -111,6 +117,9 @@ class LDM(object):
         if D is None:
             all_pairs = [i for i in combinations(range(n_sample), 2)]
             D = get_exclusive_pairs(all_pairs, S)
+        else:
+            covered_items = get_unique_items(S, D)
+            X = np.delete(X, covered_items, 0)
 
         def objective_func(w):
             a = squared_sum_grouped_dist(S, X, w) * 1.0
