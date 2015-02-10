@@ -204,11 +204,13 @@ def get_exclusive_pairs(target_pairs, reference_pairs):
         -------
 
     """
-    res = list(target_pairs)
+    res = np.array(target_pairs)
+    rm_idx = []
     for i, ref_pair in enumerate(reference_pairs):
         for j, tgt_pair in enumerate(target_pairs):
             if set(ref_pair) == set(tgt_pair):
-                res.pop(j)
+                rm_idx.append(j)
+    res = np.delete(res, rm_idx)
     return res
 
 def get_unique_items(x_pairs, y_pairs):
