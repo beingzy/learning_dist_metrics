@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 import scipy as sp
 import sklearn as sk
+import networkx as nx
 
 import matplotlib.pyplot as plt
 
@@ -30,7 +31,7 @@ import matplotlib.pyplot as plt
 ## DEFINE ENVINRONMENT       ##
 ## ######################### ##
 ROOT_PATH = "/Users/beingzy/Documents/Projects/learning_dist_metrics"
-DATA_PATH = ROOT_PATH + "/datasets/data/"
+DATA_PATH = ROOT_PATH + "/learning_dist_metrics/datasets/data/"
 
 os.chdir(ROOT_PATH)
 
@@ -71,14 +72,14 @@ csvfiles = [ i for i in glob.glob(DATA_PATH + "facebook/csv/*.csv") ]
 rows = []
 min_info_length = 5
 for fcsv in csvfiles:
-	df = pd.read_csv(fcsv, header = 0)
-	for idx, row in df.iterrows():
-		encode = dict()
-		for i, j in zip(row.index, row.values):
-			if not np.isnan(j):
-				encode[i] = j
-		if len(encode) >= min_info_length:
-			rows.append(pd.Series(encode))
+    df = pd.read_csv(fcsv, header = 0)
+    for idx, row in df.iterrows():
+        encode = dict()
+        for i, j in zip(row.index, row.values):
+            if not np.isnan(j):
+                encode[i] = j
+        if len(encode) >= min_info_length:
+            rows.append(pd.Series(encode))
 
 users = pd.concat(rows, axis = 1).T
 
@@ -98,5 +99,34 @@ linked_ids = set.union(set(friends["x1"].values),
 				 set(friends["x2"].values))
 n_linked_users = users["user_id"].apply(lambda x: 1 if x in linked_ids else 0).sum()
 print "******** {0}% users have defined friendships ***********".format(np.round(n_linked_users * 1.0 / n_obs, 3) * 100)
+
+## ##################################### ##
+## DATA PROCESSING                       ##
+## a. Remove user with no friendships    ##
+## b. Analyze the structure of network   ##
+## ##################################### ##
+users = users[ users.user_id.apply(lambda x: True if x in linked_ids else False) ]
+users = users[ useres.user_id in linked_ids ]
+
+row_idx = friends.apply(lambda x: (x[0] in users.user_id) & (x[1] in users.user_id),
+        			axis = 1)
+friends = friends[row_idx]
+print "********** #users with defined friends: {0} ***************".format(users.shape[0])
+print "********** #edges (parwise connections): {0} **************".format(friends.shape[0])
+
+## ##################################### ##
+## TABULARIZE FRIENDS DATA               ##
+## a. (u1, u2): diff (f1, f2, f3, ...)   ##
+## ##################################### ##
+counter = 0
+for idx, row in friends.iterrows():
+    if counter < 10:
+        print "*********************"
+        print users[users.user_id == row[0]]
+        print users[users.user_id == row[1]]
+        print "*********************"
+        counter += 1
+    else:
+        break
 
 
