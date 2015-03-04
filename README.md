@@ -10,9 +10,9 @@ The learning distance metrics learns weights of features of subjects by maximizi
 d(x, y) = d_A(x, y) = ||x - y||_A = \sqrt{(x - y)^{T} A (x - y)}
 ```
 * Objective function for Minimization:
-\[
+```math
 min_{A} = \frac{sum_{(x, y) \in S}d(x, y)}{sum_{(x, y) \in D}d(x, y)}
-\]
+```
 Where, **S** is the set of subject pairs considered coming from a same class. **D** is the set of subject pairs considered from a different class.
 
 
