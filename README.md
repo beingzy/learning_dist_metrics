@@ -3,10 +3,6 @@ Learning Distance Metrics
 *learning_dist_metrics* is a Python module to implementate the supervised learning distance metrics algorithm introduced in 
 the [paper](http://ai.stanford.edu/~ang/papers/nips02-metric.pdf), which is co-authored by [Eric P. Xing](), [Andrew Y. Ng](), [Micheal I. Jordan]() and [Start Russell](). To deliver a consistent programming style, the algorithm is developed by following [scikit-learn](http://orbi.ulg.ac.be/bitstream/2268/154357/1/paper.pdf) API design protocols.
 
-### Algorithm details:
-
-### Modified Objective Functions:
-
 
 How to Install: 
 ===============
@@ -26,3 +22,5 @@ ldm = LDM()
 
 ldm.fit(sample_data.data, sample_data.sim_pairs, sample_data.diff_pairs)
 ```
+![3D Scatterplots of 2 Clusters in the original space](/images/2clusters_3d_origin.png)
+![3D Scatterplots of 2 Clusters in the transformed Space](/images/2clusters_3d_fitted.png)
