@@ -15,7 +15,7 @@ The algorithm is still in packaging process. To use it, download the module from
 
 How to use it:
 ==============
-```
+```python
 from learning_dist_metrics.datasets import load_data
 from laerning_dist_metrics.ldm import LDM
 
