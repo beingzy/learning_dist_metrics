@@ -6,13 +6,14 @@ the [publication](http://ai.stanford.edu/~ang/papers/nips02-metric.pdf), which i
 The learning distance metrics learns weights of features of subjects by maximizing the distances between subjects from different class and minimizing the ditances between subjects of a same class. The implemented version makes assumption on the matrix, **A**,is diagonal. For learning purpose, the user is supposed to provide the subject profile data, a list of pairs considered same and a list of pairs considered different. If the list of different classes is not provided, the algorithm will consrtuct the list by including all of the pairs which are formed by any two of subjects mentioned in the profile data and not listed in the same class list. As a result, the learned weights matrix, **A**, will be yield.
 
 * Distnace Definion:
-\[
+```math
 d(x, y) = d_A(x, y) = ||x - y||_A = \sqrt{(x - y)^{T} A (x - y)}
-\]
+```
 * Objective function for Minimization:
 \[
 min_{A} = \frac{sum_{(x, y) \in S}d(x, y)}{sum_{(x, y) \in D}d(x, y)}
 \]
+Where, **S** is the set of subject pairs considered coming from a same class. **D** is the set of subject pairs considered from a different class.
 
 
 
