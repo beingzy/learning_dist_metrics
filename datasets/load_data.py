@@ -46,8 +46,14 @@ def load_sample_data():
     X = data[:, :-1]
     y = data[:, -1]
 
-    idx_ones = [i for i, val in enumerate(y) if val == 1]
-    idx_zeros = [i for i, val in enumerate(y) if val == 0]
+    #idx_ones = [i for i, val in enumerate(y) if val == 1]
+    #idx_zeros = [i for i, val in enumerate(y) if val == 0]
+    idx_ones, idx_zeros = [], []
+    for i, val in enumerate(y):
+        if val == 1:
+            idx_ones.append(i)
+        if val == 0:
+            idx_zeros.append(i)
 
     sim_pairs, diff_pairs = [], []
 

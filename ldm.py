@@ -36,12 +36,12 @@ class LDM(object):
     _ratio: float
         The ratio of sum distances of transformed points known similar
         over its couterpart of tarnsformed points known different
-	"""
+    """
 
     def __init__(self, dist_func = None, report_excution_time= True):
-    	self._transform_matrix = np.array([])
-    	self._ratio = 1
-    	self.report_excution_time = report_excution_time
+        self._transform_matrix = np.array([])
+        self._ratio = 1
+        self.report_excution_time = report_excution_time
         pass 
 
     def fit(self, X, S, D = None):
@@ -67,22 +67,22 @@ class LDM(object):
         return self 
 
     def fit_transform(self, X, S, D = None):
-    	"""Fit the model with X, S, D and conduct transformation on X
+        """Fit the model with X, S, D and conduct transformation on X
 
-    	Parameters:
-    	-----------
-    	X: {matrix-like, np.array}, shape (n_sample, n_features)
-    		Training data, where n_samples is the number of n_samples
-    		and n_features is the number of features 
+        Parameters:
+        -----------
+        X: {matrix-like, np.array}, shape (n_sample, n_features)
+            Training data, where n_samples is the number of n_samples
+            and n_features is the number of features 
 
-    	Returns:
-    	--------
-    	X_new: {marix-like, np.array}, shape (n_sample, n_features)
-    		The return of X transformed by fitted matrix A
-    	"""
-    	self.fit(X, S, D)
-    	X_new = self.transform(X)
-    	return X_new
+        Returns:
+        --------
+        X_new: {marix-like, np.array}, shape (n_sample, n_features)
+            The return of X transformed by fitted matrix A
+        """
+        self.fit(X, S, D)
+        X_new = self.transform(X)
+        return X_new
 
     def _fit(self, X, S, D = None):
         """Fit the model with given information: X, S, D
@@ -96,8 +96,8 @@ class LDM(object):
         Parameters:
         ----------
         X: {matrix-like, np.array}, shape (n_sample, n_features)
-    	    Training data, where n_samples is the number of n_samples
-    	    and n_features is the number of features 
+            Training data, where n_samples is the number of samples
+            and n_features is the number of features 
         S: {vector-like, list} a list of tuples which define a pair of
                   data points known as similiar 
         D: {vector-like, list} a list of tuples which define a pair of
@@ -106,8 +106,8 @@ class LDM(object):
         Returns:
         --------
         _trans_vec: {matrix-like, np.array}, shape(n_features, n_features)
-    	       A transformation matrix (A) 
-    	_ratio: float
+               A transformation matrix (A) 
+        _ratio: float
         """
         n_sample, n_features = X.shape
 
@@ -126,50 +126,50 @@ class LDM(object):
             b = squared_sum_grouped_dist(D, X, w) * 1.0
             return a / b
 
-        start_time = time.time()
+        #start_time = time.time()
         fitted = minimize(objective_func, init, method="L-BFGS-B", bounds = bnds)
-        duration = time.time() - start_time
+        #duration = time.time() - start_time
 
-        if self.report_excution_time:
-            print("--- %s seconds ---" % duration)
+        #if self.report_excution_time:
+        #    print("--- %s seconds ---" % duration)
 
-        self._transform_matrix = fitted.x
-        self._ratio = fitted.fun / objective_func(init)
+        self._transform_matrix = fitted['x']
+        self._ratio = fitted['fun'] / objective_func(init) # optimized value vs. value of initial setting
         self._dist_func = lambda x, y: weighted_euclidean(x, y, w = w)
 
         return (self._transform_matrix, self._ratio)
 
     def transform(self, X):
-    	"""Tranform X by the learned tranformation matrix (A)
+        """Tranform X by the learned tranformation matrix (A)
 
-    	Parameters:
-    	-----------
-    	X: {matrix-like, np.array}, shape (n_sample, n_features)
-    		Training data, where n_samples is the number of n_samples
-    		and n_features is the number of features 
+        Parameters:
+        -----------
+        X: {matrix-like, np.array}, shape (n_sample, n_features)
+            Training data, where n_samples is the number of n_samples
+            and n_features is the number of features 
 
-    	Returns:
-    	--------
-    	X_new: {marix-like, np.array}, shape (n_sample, n_features)
-    		The return of X transformed by fitted matrix A
-    	"""
-    	n_sample, n_features = X.shape
-    	trans_matrix = self._transform_matrix
-    	if not len(trans_matrix) == n_features:
-    		raise ValueError('Transformation matrix is not compatiable with X!')
-    	X_new = self._transform_matrix * X 
+        Returns:
+        --------
+        X_new: {marix-like, np.array}, shape (n_sample, n_features)
+            The return of X transformed by fitted matrix A
+        """
+        n_sample, n_features = X.shape
+        trans_matrix = self._transform_matrix
+        if not len(trans_matrix) == n_features:
+            raise ValueError('Transformation matrix is not compatiable with X!')
+        X_new = self._transform_matrix * X 
 
-    	return X_new
+        return X_new
 
     def get_transform_matrix(self):
-    	"""Returned the fitted transformation matrix (A)
+        """Returned the fitted transformation matrix (A)
 
-    	Returns:
-    	-------
-    	_trans_vec: {matrix-like, np.array}, shape(n_features, n_features)
-    	       A transformation matrix (A) 
-    	"""
-    	return self._transform_matrix
+        Returns:
+        -------
+        _trans_vec: {matrix-like, np.array}, shape(n_features, n_features)
+               A transformation matrix (A) 
+        """
+        return self._transform_matrix
 
     def fitted_dist_func(self, x, y):
         """Returned the distance functions used in fitting model 
@@ -194,24 +194,21 @@ class LDM(object):
 def get_exclusive_pairs(target_pairs, reference_pairs):
     """ Remove from target_paris the item (pairs) which
         has matches in reference_pairs.
-
+        
         Parameters:
         -----------
         target_pairs: {list}, [(1, 2), (1, 3), ...]
         reference_pairs: {list}, [(2, 1), (10, 11)]
 
-        Returns:
+        Returns:  
         -------
-
     """
-    res = np.array(target_pairs)
-    rm_idx = []
-    for i, ref_pair in enumerate(reference_pairs):
-        for j, tgt_pair in enumerate(target_pairs):
+    for ref_pair in reference_pairs:
+        for tgt_pair in target_pairs:
             if set(ref_pair) == set(tgt_pair):
-                rm_idx.append(j)
-    res = np.delete(res, rm_idx)
-    return res
+                target_pairs.remove(tgt_pair)
+                break
+    return target_pairs
 
 def get_unique_items(x_pairs, y_pairs):
     """Return all item mentioned either by x_pairs
@@ -225,6 +222,3 @@ def get_unique_items(x_pairs, y_pairs):
         if not b in res:
             res.append(b)
     return res
-
-
-
