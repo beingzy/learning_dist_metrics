@@ -7,7 +7,7 @@ from dist_metrics import all_pairwise_dist
 from dist_metrics import sum_grouped_dist
 from dist_metrics import squared_sum_grouped_dist
 
-from dist_learner import LDM
+from ldm import LDM
 
 __all__ = ['weighted_euclidean',
            'pairwise_dist_wrapper',
