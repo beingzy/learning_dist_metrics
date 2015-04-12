@@ -8,8 +8,11 @@ import time
 import numpy as np 
 import pandas as pd 
 import scipy as sp 
+
 from itertools import combinations
 from scipy.optimize import minimize
+from numpy import log
+from numpy import exp
 
 from dist_metrics import weighted_euclidean
 from dist_metrics import pairwise_dist_wrapper
@@ -38,10 +41,11 @@ class LDM(object):
         over its couterpart of tarnsformed points known different
     """
 
-    def __init__(self, dist_func = None, report_excution_time= True):
+    def __init__(self, dist_func = None, report_excution_time= True, is_debug = False):
         self._transform_matrix = np.array([])
         self._ratio = 1
-        self.report_excution_time = report_excution_time
+        self._report_excution_time = report_excution_time
+        self._is_debug = is_debug
         pass 
 
     def fit(self, X, S, D = None):
@@ -123,15 +127,26 @@ class LDM(object):
 
         def objective_func(w):
             a = squared_sum_grouped_dist(S, X, w) * 1.0
-            b = squared_sum_grouped_dist(D, X, w) * 1.0
-            return a / b
+            b = sum_grouped_dist(D, X, w) * 1.0
+            return a - b
 
-        #start_time = time.time()
+        if self._is_debug:
+            try:
+                print "Examples of S: %s" % S[:5], len(S)
+                print "Examples of D: %s" % D[:5], len(D)
+                print "Examples of X: %s" % X[:5, :], X.shape
+            except:
+                print "Examples of S: %s" % S, len(S)
+                print "Examples of D: %s" % D, len(D)
+                print "Examples of X: %s" % X, X.shape
+
+
+        start_time = time.time()
         fitted = minimize(objective_func, init, method="L-BFGS-B", bounds = bnds)
-        #duration = time.time() - start_time
+        duration = time.time() - start_time
 
-        #if self.report_excution_time:
-        #    print("--- %s seconds ---" % duration)
+        if self._report_excution_time:
+            print("--- %s seconds ---" % duration)
 
         self._transform_matrix = fitted['x']
         self._ratio = fitted['fun'] / objective_func(init) # optimized value vs. value of initial setting
@@ -203,12 +218,13 @@ def get_exclusive_pairs(target_pairs, reference_pairs):
         Returns:  
         -------
     """
+    res_pairs = target_pairs[:]
     for ref_pair in reference_pairs:
-        for tgt_pair in target_pairs:
+        for tgt_pair in res_pairs:
             if set(ref_pair) == set(tgt_pair):
-                target_pairs.remove(tgt_pair)
+                res_pairs.remove(tgt_pair)
                 break
-    return target_pairs
+    return res_pairs
 
 def get_unique_items(x_pairs, y_pairs):
     """Return all item mentioned either by x_pairs
