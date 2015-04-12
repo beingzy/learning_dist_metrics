@@ -148,9 +148,9 @@ class LDM(object):
         if self._report_excution_time:
             print("--- %s seconds ---" % duration)
 
-        self._transform_matrix = fitted['x']
+        self._transform_matrix = vec_normalized(fitted['x'])
         self._ratio = fitted['fun'] / objective_func(init) # optimized value vs. value of initial setting
-        self._dist_func = lambda x, y: weighted_euclidean(x, y, w = w)
+        self._dist_func = lambda x, y: weighted_euclidean(x, y, w = self._transform_matrix)
 
         return (self._transform_matrix, self._ratio)
 
@@ -237,4 +237,12 @@ def get_unique_items(x_pairs, y_pairs):
             res.append(a)
         if not b in res:
             res.append(b)
+    return res
+
+def vec_normalized(x, digits=2):
+    """ Noramlize a vector to ensure that the sum of 
+        elements of the vector equals to one
+    """
+    x_sum = sum(x) * 1.0
+    res = [round(i/x_sum, digits) for i in x]
     return res
