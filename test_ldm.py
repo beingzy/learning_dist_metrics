@@ -9,7 +9,7 @@ class TestClassLDM(unittest.TestCase):
     def setUp(self):
     	self.ldm = LDM()
     	self.data = load_sample_data()
-        self.init_ldm = self.ldm
+      self.init_ldm = self.ldm
 
    	def test_init_dist_func(self):
    		ldm = self.init_ldm
