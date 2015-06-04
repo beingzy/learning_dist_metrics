@@ -7,16 +7,12 @@ Create Date: Feb/04/2015
 import time
 import numpy
 import pandas
-import scipy
 
 from itertools import combinations
 from scipy.optimize import minimize
-from numpy import log
-from numpy import exp
+
 
 from dist_metrics import weighted_euclidean
-from dist_metrics import pairwise_dist_wrapper
-from dist_metrics import all_pairwise_dist
 from dist_metrics import sum_grouped_dist
 from dist_metrics import squared_sum_grouped_dist
 
@@ -44,7 +40,7 @@ class LDM(object):
 
     def __init__(self, dist_func=None, report_excution_time=True,
                  is_debug=False):
-        self._transform_matrix = np.array([])
+        self._transform_matrix = numpy.array([])
         self._ratio = 1
         self._report_excution_time = report_excution_time
         self._is_debug = is_debug
@@ -129,9 +125,15 @@ class LDM(object):
             covered_items = get_unique_items(S, D)
             X = numpy.delete(X, covered_items, 0)
 
+        # Convert ids in D and S into row index, in order to provide them to
+        # a series of distance functions, squared_sum_grouped_dist() and
+        # sum_grouped_dist()
+        S_idx = [(find_index(a, ids), find_index(b, ids)) for (a, b) in S]
+        D_idx = [(find_index(a, ids), find_index(b, ids)) for (a, b) in D]
+
         def objective_func(w):
-            a = squared_sum_grouped_dist(S, X, w) * 1.0
-            b = sum_grouped_dist(D, X, w) * 1.0
+            a = squared_sum_grouped_dist(S_idx, X, w) * 1.0
+            b = sum_grouped_dist(D_idx, X, w) * 1.0
             return a - b
 
         if self._is_debug:
@@ -252,3 +254,12 @@ def vec_normalized(x, digits=2):
     x_sum = sum(x) * 1.0
     res = [round(i/x_sum, digits) for i in x]
     return res
+
+
+def find_index(val, array):
+    """ Return the index/position of element, whose value equals to val, in
+        array
+    """
+    res = [i for i, v in enumerate(array) if v == val]
+    return res[0]
+

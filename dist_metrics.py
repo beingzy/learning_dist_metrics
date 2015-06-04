@@ -65,7 +65,7 @@ def all_pairwise_dist(pair_list, data, weights=None):
 
         Parameters:
         ----------
-        * pair_list: {list, list}, a list of pairs of integers
+        * pair_list: {list, list}, a list of pairs of integers (row index)
         * data: {matrix-like}, matrix stores observations
         * weights: {vector-like}, a weights vector for weighting euclidean
             distance
