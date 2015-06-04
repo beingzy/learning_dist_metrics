@@ -88,25 +88,25 @@ class LDM(object):
     def _fit(self, X, S, D=None):
         """ Fit the model with given information: X, S, D
 
-            Fit the learning distance metrics: (1) if only S is given,
-            all pairs of items in X but not in S are considered as in D;
-            (2) if both S and D given, items in X but neither in S nor in D
-            will be removed from fitting process.
+        Fit the learning distance metrics: (1) if only S is given, all pairs of
+        items in X but not in S are considered as in D; (2) if both S and D
+        given, items in X but neither in S nor in D will be removed from
+        fitting process.
 
-            Parameters:
-            ----------
-            X: {matrix-like, np.array}, shape (n_sample, n_features) matrix of
-                observations with 1st column keeping observation ID
-            S: {vector-like, list} a list of tuples which define a pair of data
-                points known as similiar
-            D: {vector-like, list} a list of tuples which define a pair of data
-                points known as different
+        Parameters:
+        ----------
+        X: {matrix-like, np.array}, shape (n_sample, n_features) matrix of
+           observations with 1st column keeping observation ID
+        S: {vector-like, list} a list of tuples which define a pair of data
+           points known as similiar
+        D: {vector-like, list} a list of tuples which define a pair of data
+           points known as different
 
-            Returns:
-            --------
-            _trans_vec: {matrix-like, np.array}, shape(n_features, n_features)
-                A transformation matrix (A)
-            _ratio: float
+        Returns:
+        --------
+        _trans_vec: {matrix-like, np.array}, shape(n_features, n_features)
+                    A transformation matrix (A)
+        _ratio: float
         """
         if isinstance(X, pandas.DataFrame):
             X.as_matrix()
@@ -162,18 +162,18 @@ class LDM(object):
         return (self._transform_matrix, self._ratio)
 
     def transform(self, X):
-        """Tranform X by the learned tranformation matrix (A)
+        """ Tranform X by the learned tranformation matrix (A)
 
         Parameters:
         -----------
         X: {matrix-like, np.array}, shape (n_sample, n_features)
-            Training data, where n_samples is the number of n_samples
-            and n_features is the number of features
+           Training data, where n_samples is the number of n_samples
+           and n_features is the number of features
 
         Returns:
         --------
         X_new: {marix-like, np.array}, shape (n_sample, n_features)
-            The return of X transformed by fitted matrix A
+               The return of X transformed by fitted matrix A
         """
         n_sample, n_features = X.shape
         trans_matrix = self._transform_matrix
@@ -184,7 +184,7 @@ class LDM(object):
         return X_new
 
     def get_transform_matrix(self):
-        """Returned the fitted transformation matrix (A)
+        """ Returned the fitted transformation matrix (A)
 
         Returns:
         -------
@@ -196,9 +196,9 @@ class LDM(object):
     def fitted_dist_func(self, x, y):
         """ Returned the distance functions used in fitting model
 
-            Returns:
-            --------
-            func: {function} a function accept (x1, x2, *arg)
+        Returns:
+        --------
+        func: {function} a function accept (x1, x2, *arg)
         """
         if self._transform_matrix is not None:
             w = self._transform_matrix
@@ -216,13 +216,13 @@ def get_exclusive_pairs(target_pairs, reference_pairs):
     """ Remove from target_paris the item (pairs) which
         has matches in reference_pairs.
 
-        Parameters:
-        -----------
-        target_pairs: {list}, [(1, 2), (1, 3), ...]
-        reference_pairs: {list}, [(2, 1), (10, 11)]
+    Parameters:
+    -----------
+    target_pairs: {list}, [(1, 2), (1, 3), ...]
+    reference_pairs: {list}, [(2, 1), (10, 11)]
 
-        Returns:
-        -------
+    Returns:
+    -------
     """
     res_pairs = target_pairs[:]
     for ref_pair in reference_pairs:
