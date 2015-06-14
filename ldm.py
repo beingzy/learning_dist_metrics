@@ -109,7 +109,7 @@ class LDM(object):
         _ratio: float
         """
         if isinstance(X, pandas.DataFrame):
-            X.as_matrix()
+            X = X.as_matrix()
 
         ids = X[:, 0].astype(int)
         X = X[:, 1:]
@@ -126,7 +126,7 @@ class LDM(object):
             X = numpy.delete(X, covered_items, 0)
 
         # Convert ids in D and S into row index, in order to provide them to
-        # a series of distance functions, squared_sum_grouped_dist() and
+        # a set of two distance functions, squared_sum_grouped_dist() and
         # sum_grouped_dist()
         S_idx = [(find_index(a, ids), find_index(b, ids)) for (a, b) in S]
         D_idx = [(find_index(a, ids), find_index(b, ids)) for (a, b) in D]
