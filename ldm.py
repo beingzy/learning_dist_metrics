@@ -111,7 +111,7 @@ class LDM(object):
         if isinstance(X, pandas.DataFrame):
             X = X.as_matrix()
 
-        ids = X[:, 0].astype(int)
+        ids = [int(i) for i in X[:, 0]]
         X = X[:, 1:]
         n_sample, n_features = X.shape
 
