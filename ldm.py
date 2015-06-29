@@ -46,7 +46,7 @@ class LDM(object):
         self._is_debug = is_debug
 
     def fit(self, X, S, D=None):
-        """Fit the model with X and given S and D
+    """Fit the model with X and given S and D
 
         Parameters:
         ----------
@@ -63,12 +63,12 @@ class LDM(object):
         _trans_vec: {matrix-like, np.array}, shape(n_features, n_features)
                A transformation matrix (A)
         _ratio: float
-        """
+    """
         self._fit(X, S, D)
         return self
 
     def fit_transform(self, X, S, D=None):
-        """ Fit the model with X, S, D and conduct transformation on X
+    """ Fit the model with X, S, D and conduct transformation on X
 
         Parameters:
         -----------
@@ -80,7 +80,7 @@ class LDM(object):
         --------
         X_new: {marix-like, np.array}, shape (n_sample, n_features)
             The return of X transformed by fitted matrix A
-        """
+    """
         self.fit(X, S, D)
         X_new = self.transform(X)
         return X_new
@@ -108,11 +108,15 @@ class LDM(object):
                     A transformation matrix (A)
         _ratio: float
         """
-        if isinstance(X, pandas.DataFrame):
-            X = X.as_matrix()
+        # if isinstance(X, pandas.DataFrame):
+        #    X = X.as_matrix()
+        try: 
+            ids = X["ID"]
+            X = X[[c for c in X.columns if c != "ID"]]
+        except:
+            ids = [int(i) for i in X.ix[:, 0]]
+            X = X.ix[:, 1:]
 
-        ids = [int(i) for i in X[:, 0]]
-        X = X[:, 1:]
         n_sample, n_features = X.shape
 
         bnds = [(0, None)] * n_features  # boundaries
@@ -122,8 +126,12 @@ class LDM(object):
             all_pairs = [p for p in combinations(ids, 2)]
             D = get_exclusive_pairs(all_pairs, S)
         else:
+            # if D is provided, keep only users not being
+            # covered either by S or D
             covered_items = get_unique_items(S, D)
-            X = numpy.delete(X, covered_items, 0)
+            keep_items = [find_index(i, ids) for i in ids \
+                if i in covered_items]
+            X = X.ix[keep_items, :]
 
         # Convert ids in D and S into row index, in order to provide them to
         # a set of two distance functions, squared_sum_grouped_dist() and
@@ -151,7 +159,7 @@ class LDM(object):
         duration = time.time() - start_time
 
         if self._report_excution_time:
-            print("--- %s seconds ---" % duration)
+            print("--- %.2f seconds ---" % duration)
 
         w = self._transform_matrix
         self._transform_matrix = vec_normalized(fitted['x'])
@@ -229,7 +237,7 @@ def get_exclusive_pairs(target_pairs, reference_pairs):
         for tgt_pair in res_pairs:
             if set(ref_pair) == set(tgt_pair):
                 res_pairs.remove(tgt_pair)
-                break
+
     return res_pairs
 
 
