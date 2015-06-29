@@ -237,7 +237,8 @@ def get_exclusive_pairs(target_pairs, reference_pairs):
         for tgt_pair in res_pairs:
             if set(ref_pair) == set(tgt_pair):
                 res_pairs.remove(tgt_pair)
-
+                break
+                
     return res_pairs
 
 
