@@ -5,8 +5,8 @@ Author: Yi Zhang <beingzy@gmail.com>
 Create Date: Feb/04/2015
 """
 import time
-import numpy
-import pandas
+import numpy as np
+import pandas as pd
 
 from itertools import combinations
 from scipy.optimize import minimize
@@ -40,7 +40,7 @@ class LDM(object):
 
     def __init__(self, dist_func=None, report_excution_time=True,
                  is_debug=False):
-        self._transform_matrix = numpy.array([])
+        self._transform_matrix = np.array([])
         self._ratio = 1
         self._report_excution_time = report_excution_time
         self._is_debug = is_debug
@@ -108,7 +108,7 @@ class LDM(object):
                     A transformation matrix (A)
         _ratio: float
         """
-        # if isinstance(X, pandas.DataFrame):
+        # if isinstance(X, pd.DataFrame):
         #    X = X.as_matrix()
         try: 
             ids = X["ID"]
@@ -259,7 +259,7 @@ def vec_normalized(x, digits=2):
     """ Noramlize a vector to ensure that the sum of
         elements of the vector equals to one
     """
-    x_sum = sum(x) * 1.0
+    x_sum = np.sum(x) * 1.0
     res = [round(i/x_sum, digits) for i in x]
     return res
 
