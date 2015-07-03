@@ -110,19 +110,20 @@ class LDM(object):
         """
         # if isinstance(X, pd.DataFrame):
         #    X = X.as_matrix()
-        try: 
+        try:
             ids = X["ID"]
             X = X[[c for c in X.columns if c != "ID"]]
-        except:
-            ids = [int(i) for i in X.ix[:, 0]]
-            X = X.ix[:, 1:]
+        except ValueError:
+            print "Oops! No 'ID' column is found !"
+            # ids = [int(i) for i in X.ix[:, 0]]
+            # X = X.ix[:, 1:]
 
         n_sample, n_features = X.shape
 
         bnds = [(0, None)] * n_features  # boundaries
         init = [1] * n_features  # initial weights
 
-        if D is None:
+        if D == None:
             all_pairs = [p for p in combinations(ids, 2)]
             D = get_exclusive_pairs(all_pairs, S)
         else:
@@ -238,7 +239,7 @@ def get_exclusive_pairs(target_pairs, reference_pairs):
             if set(ref_pair) == set(tgt_pair):
                 res_pairs.remove(tgt_pair)
                 break
-                
+
     return res_pairs
 
 
@@ -271,4 +272,3 @@ def find_index(val, array):
     """
     res = [i for i, v in enumerate(array) if v == val]
     return res[0]
-
