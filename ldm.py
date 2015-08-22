@@ -46,7 +46,7 @@ class LDM(object):
         self._is_debug = is_debug
 
     def fit(self, X, S, D=None):
-    """Fit the model with X and given S and D
+        """Fit the model with X and given S and D
 
         Parameters:
         ----------
@@ -63,12 +63,12 @@ class LDM(object):
         _trans_vec: {matrix-like, np.array}, shape(n_features, n_features)
                A transformation matrix (A)
         _ratio: float
-    """
+        """
         self._fit(X, S, D)
         return self
 
     def fit_transform(self, X, S, D=None):
-    """ Fit the model with X, S, D and conduct transformation on X
+        """ Fit the model with X, S, D and conduct transformation on X
 
         Parameters:
         -----------
@@ -80,7 +80,7 @@ class LDM(object):
         --------
         X_new: {marix-like, np.array}, shape (n_sample, n_features)
             The return of X transformed by fitted matrix A
-    """
+        """
         self.fit(X, S, D)
         X_new = self.transform(X)
         return X_new
