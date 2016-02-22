@@ -1,14 +1,14 @@
 import unittest
-from scipy.spatial.distance import euclidean
+
 from numpy import array
 from numpy import sqrt
- 
-from dist_metrics import weighted_euclidean
-from dist_metrics import pairwise_dist_wrapper
-from dist_metrics import all_pairwise_dist
-from dist_metrics import sum_grouped_dist
-from dist_metrics import squared_sum_grouped_dist
- 
+from scipy.spatial.distance import euclidean
+
+from learning_dist_metrics.dist_metrics import squared_sum_grouped_dist
+from learning_dist_metrics.dist_metrics import sum_grouped_dist
+from learning_dist_metrics.dist_metrics import weighted_euclidean
+
+
 class test_learing_metric(unittest.TestCase):
 
     version = "0.2"
@@ -18,8 +18,7 @@ class test_learing_metric(unittest.TestCase):
         self.x1 = [1, 1, 0, 2]
         self.x2 = [0, 0, 0, 1]
         # grouped_average_distance
-        self.data1 = [[4.5, 2], [5.2, 3], [7, 1.5], \
-              [2, 3.1], [2.5, 2]]
+        self.data1 = [[4.5, 2], [5.2, 3], [7, 1.5], [2, 3.1], [2.5, 2]]
         self.data1 = array(self.data1)
         self.data1_pairs = [(0, 1), (0, 2), (1, 2), (3, 4)]
  

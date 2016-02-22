@@ -5,16 +5,14 @@ Author: Yi Zhang <beingzy@gmail.com>
 Create Date: Feb/04/2015
 """
 import time
-import numpy as np
-import pandas as pd
-
 from itertools import combinations
+
+import numpy as np
 from scipy.optimize import minimize
 
-
-from dist_metrics import weighted_euclidean
-from dist_metrics import sum_grouped_dist
-from dist_metrics import squared_sum_grouped_dist
+from learning_dist_metrics.dist_metrics import squared_sum_grouped_dist
+from learning_dist_metrics.dist_metrics import sum_grouped_dist
+from learning_dist_metrics.dist_metrics import weighted_euclidean
 
 
 class LDM(object):
@@ -28,10 +26,10 @@ class LDM(object):
 
     Attributes:
     -----------
-    _trans_vec: array, [n_features, ]
+    * trans_vec: array, [n_features, ]
         The A matrix transforming the original datasets
 
-    _ratio: float
+    *ratio: float
         The ratio of sum distances of transformed points known similar
         over its couterpart of tarnsformed points known different
     """
@@ -114,7 +112,7 @@ class LDM(object):
             ids = X["ID"]
             X = X[[c for c in X.columns if c != "ID"]]
         except ValueError:
-            print "Oops! No 'ID' column is found !"
+            print( "Oops! No 'ID' column is found !" )
             # ids = [int(i) for i in X.ix[:, 0]]
             # X = X.ix[:, 1:]
 
@@ -147,13 +145,13 @@ class LDM(object):
 
         if self._is_debug:
             try:
-                print "Examples of S: %s" % S[:5], len(S)
-                print "Examples of D: %s" % D[:5], len(D)
-                print "Examples of X: %s" % X[:5, :], X.shape
+                print( "Examples of S: %s" % S[:5], len(S) )
+                print( "Examples of D: %s" % D[:5], len(D) )
+                print( "Examples of X: %s" % X[:5, :], X.shape )
             except:
-                print "Examples of S: %s" % S, len(S)
-                print "Examples of D: %s" % D, len(D)
-                print "Examples of X: %s" % X, X.shape
+                print( "Examples of S: %s" % S, len(S) )
+                print( "Examples of D: %s" % D, len(D) )
+                print( "Examples of X: %s" % X, X.shape )
 
         start_time = time.time()
         fitted = minimize(objective_func, init, method="L-BFGS-B", bounds=bnds)
