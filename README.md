@@ -35,5 +35,5 @@ ldm = LDM()
 
 ldm.fit(sample_data.data, sample_data.sim_pairs, sample_data.diff_pairs)
 ```
-![3D Scatterplots of 2 Clusters in the original space](/images/2clusters_3d_origin.png)
-![3D Scatterplots of 2 Clusters in the transformed Space](/images/2clusters_3d_fitted.png)
+![3D Scatterplots of 2 Clusters in the original space](/doc/images/2clusters_3d_origin.png)
+![3D Scatterplots of 2 Clusters in the transformed Space](/doc/images/2clusters_3d_fitted.png)
