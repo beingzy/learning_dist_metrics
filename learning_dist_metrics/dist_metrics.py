@@ -4,6 +4,8 @@ Collection of Distance Metrics
 import pandas as pd
 from numpy import sqrt
 from scipy.spatial.distance import euclidean
+from numba import double
+from numba import jit, autojit
 
 
 def weighted_euclidean(x, y, w=None):
@@ -17,9 +19,11 @@ def weighted_euclidean(x, y, w=None):
     if w is None:
         w = [1] * len(x)
 
-    x = [sqrt(i_w) * i_x for i_w, i_x in zip(w, x)]
-    y = [sqrt(i_w) * i_y for i_w, i_y in zip(w, y)]
-    return euclidean(x, y)
+    D = 0
+    for xi, yi, wi in zip(x, y, w):
+        D += (xi - yi) * (xi - yi) * wi * wi
+
+    return sqrt(D)
 
 
 def pairwise_dist_wrapper(pair, data, weights=None):
