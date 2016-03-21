@@ -154,7 +154,7 @@ class LDM(object):
                 print( "Examples of X: %s" % X, X.shape )
 
         start_time = time.time()
-        fitted = minimize(objective_func, init, method="L-BFGS-B", bounds=bnds)
+        fitted = minimize(objective_func, init, method="SLSQP", bounds=bnds)
         duration = time.time() - start_time
 
         if self._report_excution_time:
