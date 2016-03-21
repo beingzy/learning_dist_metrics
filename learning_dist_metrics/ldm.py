@@ -36,8 +36,13 @@ class LDM(object):
 
     VERSION = "0.2"
 
-    def __init__(self, dist_func=None, report_excution_time=True,
+    def __init__(self, solver_method="L-BFGS-B", report_excution_time=True,
                  is_debug=False):
+
+        if not solver_method in ["L-BFGS-B", "SLSQP"]:
+            raise ValueError("Only support \"L-BFGS-B\" or \"SLSQP\"!")
+
+        self._solver_method = solver_method
         self._transform_matrix = np.array([])
         self._ratio = 1
         self._report_excution_time = report_excution_time
@@ -154,7 +159,7 @@ class LDM(object):
                 print( "Examples of X: %s" % X, X.shape )
 
         start_time = time.time()
-        fitted = minimize(objective_func, init, method="SLSQP", bounds=bnds)
+        fitted = minimize(objective_func, init, method=self._solver_method, bounds=bnds)
         duration = time.time() - start_time
 
         if self._report_excution_time:
