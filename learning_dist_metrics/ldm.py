@@ -115,11 +115,10 @@ class LDM(object):
         #    X = X.as_matrix()
         try:
             ids = X["ID"]
-            X = X[[c for c in X.columns if c != "ID"]]
+            X = X.drop(["ID"], axis=1, inplace=False)
+
         except ValueError:
             print( "Oops! No 'ID' column is found !" )
-            # ids = [int(i) for i in X.ix[:, 0]]
-            # X = X.ix[:, 1:]
 
         n_sample, n_features = X.shape
 
@@ -130,7 +129,7 @@ class LDM(object):
             all_pairs = [p for p in combinations(ids, 2)]
             D = get_exclusive_pairs(all_pairs, S)
         else:
-            # if D is provided, keep only users not being
+            # if D is provided, keep only users being
             # covered either by S or D
             covered_items = get_unique_items(S, D)
             keep_items = [find_index(i, ids) for i in ids \
@@ -189,9 +188,9 @@ class LDM(object):
         """
         n_sample, n_features = X.shape
         trans_matrix = self._transform_matrix
-        if not len(trans_matrix) == n_features:
-            raise ValueError('Transformation matrix is not \
-                compatiable with X!')
+        if len(trans_matrix) != n_features:
+            raise ValueError("Transformation matrix is not",
+                "compatiable with X!")
         X_new = self._transform_matrix * X
         return X_new
 

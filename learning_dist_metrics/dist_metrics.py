@@ -128,6 +128,11 @@ def squared_sum_grouped_dist(pair_list, data, weights=None):
     p = [[0, 1], [0, 4], [3, 4]]
     sum_dist = squared_sum_grouped_dist(p, data)
     """
-    dist = all_pairwise_dist(pair_list, data, weights)
-    dist_squared = [d * d for d in dist]
-    return sum(dist_squared)
+    sum_squared_dist = 0
+    for pair in pair_list:
+        dist = pairwise_dist_wrapper(pair, data, weights)
+        sum_squared_dist += dist * dist
+    #dist = all_pairwise_dist(pair_list, data, weights)
+    #dist_squared = [d * d for d in dist]
+    #return sum(dist_squared)
+    return sum_squared_dist
