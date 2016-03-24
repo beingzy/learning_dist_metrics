@@ -6,6 +6,7 @@ Create Date: Feb/04/2015
 """
 import time
 from itertools import combinations
+import warnings
 
 import numpy as np
 from scipy.optimize import minimize
@@ -116,7 +117,7 @@ class LDM(object):
         try:
             ids = X["ID"]
             X = X.drop(["ID"], axis=1, inplace=False)
-        except ValueError:
+        except:
             print( "Oops! No 'ID' column is found !")
 
         n_sample, n_features = X.shape
@@ -141,10 +142,12 @@ class LDM(object):
         S_idx = [(find_index(a, ids), find_index(b, ids)) for (a, b) in S]
         D_idx = [(find_index(a, ids), find_index(b, ids)) for (a, b) in D]
 
+        grouped_distance_container = WeightedDistanceTester(X, S_idx, D_idx)
+
         def objective_func(w):
-            a = squared_sum_grouped_dist(S_idx, X, w) * 1.0
-            b = sum_grouped_dist(D_idx, X, w) * 1.0
-            return a - b
+            #a = squared_sum_grouped_dist(S_idx, X, w) * 1.0
+            #b = sum_grouped_dist(D_idx, X, w) * 1.0
+            return grouped_distance_container.update(w)
 
         if self._is_debug:
             try:

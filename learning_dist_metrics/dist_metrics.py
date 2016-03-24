@@ -18,7 +18,7 @@ def weighted_euclidean(x, y, w=None):
     else:
         D = 0
         for xi, yi, wi in zip(x, y, w):
-            D += (xi - yi) * (xi - yi) * wi * wi
+            D += (xi - yi) * (xi - yi) * wi
     return sqrt(D)
 
 
@@ -146,9 +146,18 @@ class WeightedDistanceTester(object):
         dist_1ds = np.empty((n_obs, n_feat))
         for ii, (uid_a, uid_b) in enumerate(edges):
             dist_1ds[ii, :] = user_profiles[uid_a, :] - user_profiles[uid_b, :]
-        return np.square(dist_1ds)
+        return dist_1ds
+
+    def _get_sim_agg_info(self, weights):
+        sim_sum_squared = (np.square(self._sim_dist_array * weights)).sum(axis=1).sum()
+        return float(sim_sum_squared)
+
+    def _get_diff_agg_info(self, weights):
+        """ return sum of distance """
+        diff_sum = np.sqrt((np.square(self._diff_dist_array * weights)).sum(axis=1)).sum()
+        return float(diff_sum)
 
     def update(self, weights):
-        sim_sum = np.sqrt((self._sim_dist_array * weights).sum(axis=1)).sum()
-        diff_sum = np.sqrt((self._diff_dist_array * weights).sum(axis=1)).sum()
-        return sim_sum - diff_sum
+        sim_info = self._get_sim_agg_info(weights)
+        diff_info = self._get_diff_agg_info(weights)
+        return sim_info - diff_info
