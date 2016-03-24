@@ -2,10 +2,8 @@
 Collection of Distance Metrics
 """
 import pandas as pd
+import numpy as np
 from numpy import sqrt
-from scipy.spatial.distance import euclidean
-from numba import double
-from numba import jit, autojit
 
 
 def weighted_euclidean(x, y, w=None):
@@ -83,7 +81,6 @@ def all_pairwise_dist(pair_list, data, weights=None):
     return dist
 
 
-@autojit
 def sum_grouped_dist(pair_list, data, weights=None):
     """ Return the sum of distance
 
@@ -136,3 +133,22 @@ def squared_sum_grouped_dist(pair_list, data, weights=None):
     #dist_squared = [d * d for d in dist]
     #return sum(dist_squared)
     return sum_squared_dist
+
+
+class WeightedDistanceTester(object):
+
+    def __init__(self, user_profiles, sim_edges, diff_edges):
+        self._sim_dist_array = self._get_1d_squared_diff(sim_edges, user_profiles)
+        self._diff_dist_array = self._get_1d_squared_diff(diff_edges, user_profiles)
+
+    def _get_1d_squared_diff(self, edges, user_profiles):
+        n_obs, n_feat = len(edges), user_profiles.shape[1]
+        dist_1ds = np.empty((n_obs, n_feat))
+        for ii, (uid_a, uid_b) in enumerate(edges):
+            dist_1ds[ii, :] = user_profiles[uid_a, :] - user_profiles[uid_b, :]
+        return np.square(dist_1ds)
+
+    def update(self, weights):
+        sim_sum = np.sqrt((self._sim_dist_array * weights).sum(axis=1)).sum()
+        diff_sum = np.sqrt((self._diff_dist_array * weights).sum(axis=1)).sum()
+        return sim_sum - diff_sum

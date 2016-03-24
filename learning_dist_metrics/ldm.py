@@ -13,6 +13,7 @@ from scipy.optimize import minimize
 from learning_dist_metrics.dist_metrics import squared_sum_grouped_dist
 from learning_dist_metrics.dist_metrics import sum_grouped_dist
 from learning_dist_metrics.dist_metrics import weighted_euclidean
+from learning_dist_metrics.dist_metrics import WeightedDistanceTester
 
 
 class LDM(object):
@@ -36,7 +37,7 @@ class LDM(object):
 
     VERSION = "0.2"
 
-    def __init__(self, solver_method="L-BFGS-B", report_excution_time=True,
+    def __init__(self, solver_method="SLSQP", report_excution_time=True,
                  is_debug=False):
 
         if not solver_method in ["L-BFGS-B", "SLSQP"]:
@@ -68,7 +69,6 @@ class LDM(object):
         _ratio: float
         """
         self._fit(X, S, D)
-        return self
 
     def fit_transform(self, X, S, D=None):
         """ Fit the model with X, S, D and conduct transformation on X
@@ -116,9 +116,8 @@ class LDM(object):
         try:
             ids = X["ID"]
             X = X.drop(["ID"], axis=1, inplace=False)
-
         except ValueError:
-            print( "Oops! No 'ID' column is found !" )
+            print( "Oops! No 'ID' column is found !")
 
         n_sample, n_features = X.shape
 
