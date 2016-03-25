@@ -28,7 +28,7 @@ class TestClassLDM(unittest.TestCase):
         self.ldm.fit(X, S, D)
 
         fitted_transform_matrix = [round(i, 2) for i in self.ldm.get_transform_matrix()]
-        estimated_value = [4.51, 0.0, 0.0]
+        estimated_value = [1, 0.0, 0.0]
         self.assertEqual(fitted_transform_matrix, estimated_value)
 
 if __name__ == "__main__":

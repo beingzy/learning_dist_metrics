@@ -144,8 +144,16 @@ class WeightedDistanceTester(object):
     def _get_1d_squared_diff(self, edges, user_profiles):
         n_obs, n_feat = len(edges), user_profiles.shape[1]
         dist_1ds = np.empty((n_obs, n_feat))
-        for ii, (uid_a, uid_b) in enumerate(edges):
-            dist_1ds[ii, :] = user_profiles[uid_a, :] - user_profiles[uid_b, :]
+        if isinstance(user_profiles, np.ndarray):
+            for ii, e in enumerate(edges):
+                dist_1ds[ii, :] = user_profiles[e[0], :] - user_profiles[e[1], :]
+        elif isinstance(user_profiles, pd.DataFrame):
+            for ii, e in enumerate(edges):
+                dist_1ds[ii, :] = user_profiles.iloc[e[0], :] - user_profiles.iloc[e[1], :]
+        else:
+            msg = " ".join(["user_profiles is in unsupported data structures",
+                            "(it must be numpy.ndarray or pandas.DataFrame)!"])
+            raise ValueError(msg)
         return dist_1ds
 
     def _get_sim_agg_info(self, weights):
