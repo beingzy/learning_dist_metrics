@@ -25,7 +25,7 @@ class TestClassLDM(unittest.TestCase):
         D = self.data.diff_pairs
 
         print(X.shape)
-        self.ldm.fit(X, S, D)
+        self.ldm.fit(X, S=S, D=D, user_ids=None)
 
         fitted_transform_matrix = [round(i, 2) for i in self.ldm.get_transform_matrix()]
         estimated_value = [1, 0.0, 0.0]

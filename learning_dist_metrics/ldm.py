@@ -6,9 +6,10 @@ Create Date: Feb/04/2015
 """
 import time
 from itertools import combinations
-import warnings
 
 import numpy as np
+import pandas as pd
+import networkx as nx
 from scipy.optimize import minimize
 
 from learning_dist_metrics.dist_metrics import squared_sum_grouped_dist
@@ -50,7 +51,7 @@ class LDM(object):
         self._report_excution_time = report_excution_time
         self._is_debug = is_debug
 
-    def fit(self, X, S, D=None):
+    def fit(self, X, S, user_ids=None, D=None):
         """Fit the model with X and given S and D
 
         Parameters:
@@ -69,9 +70,9 @@ class LDM(object):
                A transformation matrix (A)
         _ratio: float
         """
-        self._fit(X, S, D)
+        self._fit(X, S, user_ids, D)
 
-    def fit_transform(self, X, S, D=None):
+    def fit_transform(self, X, S, user_ids=None, D=None):
         """ Fit the model with X, S, D and conduct transformation on X
 
         Parameters:
@@ -85,11 +86,41 @@ class LDM(object):
         X_new: {marix-like, np.array}, shape (n_sample, n_features)
             The return of X transformed by fitted matrix A
         """
-        self.fit(X, S, D)
+        self.fit(X, S, user_ids, D)
         X_new = self.transform(X)
         return X_new
 
-    def _fit(self, X, S, D=None):
+    def _data_validator(self, X, user_ids=None):
+
+        if isinstance(X, np.ndarray):
+            if user_ids is None:
+                ids = range(X.shape[0])
+            else:
+                ids = user_ids
+
+        elif isinstance(X, pd.DataFrame):
+            col_names = X.columns.tolist()
+            if not (user_ids is None):
+                ids = user_ids
+            else:
+                if 'ID' in col_names or 'id' in col_names:
+                    try:
+                        ids = X['ID'].tolist()
+                        X = X.drop(['ID'], axis=1, inplace=False).as_matrix()
+                    except:
+                        ids = X['id'].tolist()
+                        X = X.drop(['id'], axis=1, inplace=False).as_matrix()
+                else:
+                    ids = range(X.shape[0])
+                    X = X.as_matrix()
+        else:
+            msg = "X must be either numpy.ndarray or pandas.DataFrame"
+            raise ValueError(msg)
+
+        return ids, X
+
+
+    def _fit(self, X, S, user_ids=None, D=None):
         """ Fit the model with given information: X, S, D
 
         Fit the learning distance metrics: (1) if only S is given, all pairs of
@@ -99,6 +130,7 @@ class LDM(object):
 
         Parameters:
         ----------
+        user_id: {vector-like}, user
         X: {matrix-like, np.array}, shape (n_sample, n_features) matrix of
            observations with 1st column keeping observation ID
         S: {vector-like, list} a list of tuples which define a pair of data
@@ -112,14 +144,8 @@ class LDM(object):
                     A transformation matrix (A)
         _ratio: float
         """
-        # if isinstance(X, pd.DataFrame):
-        #    X = X.as_matrix()
-        try:
-            ids = X["ID"]
-            X = X.drop(["ID"], axis=1, inplace=False)
-        except:
-            print( "Oops! No 'ID' column is found !")
 
+        ids, X = self._data_validator(X=X, user_ids=user_ids)
         n_sample, n_features = X.shape
 
         bnds = [(0, None)] * n_features  # boundaries
@@ -134,19 +160,18 @@ class LDM(object):
             covered_items = get_unique_items(S, D)
             keep_items = [find_index(i, ids) for i in ids \
                 if i in covered_items]
-            X = X.ix[keep_items, :]
+            X = X[keep_items, :]
 
         # Convert ids in D and S into row index, in order to provide them to
         # a set of two distance functions, squared_sum_grouped_dist() and
         # sum_grouped_dist()
         S_idx = [(find_index(a, ids), find_index(b, ids)) for (a, b) in S]
         D_idx = [(find_index(a, ids), find_index(b, ids)) for (a, b) in D]
+        # [ [a, b] for a, b in g.edges() if a in sample_user_ids or b in sample_user_ids ]
 
         grouped_distance_container = WeightedDistanceTester(X, S_idx, D_idx)
 
         def objective_func(w):
-            #a = squared_sum_grouped_dist(S_idx, X, w) * 1.0
-            #b = sum_grouped_dist(D_idx, X, w) * 1.0
             return grouped_distance_container.update(w)
 
         if self._is_debug:
@@ -174,7 +199,7 @@ class LDM(object):
 
         return (self._transform_matrix, self._ratio)
 
-    def transform(self, X):
+    def transform(self, X, user_ids=None):
         """ Tranform X by the learned tranformation matrix (A)
 
         Parameters:
@@ -188,6 +213,7 @@ class LDM(object):
         X_new: {marix-like, np.array}, shape (n_sample, n_features)
                The return of X transformed by fitted matrix A
         """
+        ids, X = self._data_validator(X, user_ids)
         n_sample, n_features = X.shape
         trans_matrix = self._transform_matrix
         if len(trans_matrix) != n_features:
