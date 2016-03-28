@@ -18,14 +18,12 @@ class TestClassLDM(unittest.TestCase):
     
     def test_fit(self):
 
-        X = self.data.data
-        X = DataFrame(X, columns=self.data.feat_names)
-        X["ID"] = range(X.shape[0])
+        user_profiles = self.data.data
+        user_ids = range(user_profiles.shape[0])
         S = self.data.sim_pairs
         D = self.data.diff_pairs
 
-        print(X.shape)
-        self.ldm.fit(X, S=S, D=D, user_ids=None)
+        self.ldm.fit(user_ids, user_profiles, S, D)
 
         fitted_transform_matrix = [round(i, 2) for i in self.ldm.get_transform_matrix()]
         estimated_value = [1, 0.0, 0.0]

@@ -9,7 +9,6 @@ from itertools import combinations
 
 import numpy as np
 import pandas as pd
-import networkx as nx
 from scipy.optimize import minimize
 
 from learning_dist_metrics.dist_metrics import squared_sum_grouped_dist
@@ -51,7 +50,7 @@ class LDM(object):
         self._report_excution_time = report_excution_time
         self._is_debug = is_debug
 
-    def fit(self, X, S, user_ids=None, D=None):
+    def fit(self, user_ids, user_profiles, S, D=None):
         """Fit the model with X and given S and D
 
         Parameters:
@@ -70,9 +69,9 @@ class LDM(object):
                A transformation matrix (A)
         _ratio: float
         """
-        self._fit(X, S, user_ids, D)
+        self._fit(user_ids, user_profiles, S, D)
 
-    def fit_transform(self, X, S, user_ids=None, D=None):
+    def fit_transform(self, user_ids, user_profiles, S, D=None):
         """ Fit the model with X, S, D and conduct transformation on X
 
         Parameters:
@@ -86,52 +85,51 @@ class LDM(object):
         X_new: {marix-like, np.array}, shape (n_sample, n_features)
             The return of X transformed by fitted matrix A
         """
-        self.fit(X, S, user_ids, D)
-        X_new = self.transform(X)
-        return X_new
+        self.fit(user_ids, user_profiles, S, D)
+        return self.transform(user_profiles)
 
-    def _data_validator(self, X, user_ids=None):
+    def _data_validator(self, user_profiles, user_ids=None):
 
-        if isinstance(X, np.ndarray):
+        if isinstance(user_profiles, np.ndarray):
             if user_ids is None:
-                ids = range(X.shape[0])
+                ids = range(user_profiles.shape[0])
             else:
                 ids = user_ids
 
-        elif isinstance(X, pd.DataFrame):
-            col_names = X.columns.tolist()
+        elif isinstance(user_profiles, pd.DataFrame):
+            col_names = user_profiles.columns.tolist()
             if not (user_ids is None):
                 ids = user_ids
             else:
                 if 'ID' in col_names or 'id' in col_names:
                     try:
-                        ids = X['ID'].tolist()
-                        X = X.drop(['ID'], axis=1, inplace=False).as_matrix()
+                        ids = user_profiles['ID'].tolist()
+                        user_profiles = user_profiles.drop(['ID'], axis=1, inplace=False).as_matrix()
                     except:
-                        ids = X['id'].tolist()
-                        X = X.drop(['id'], axis=1, inplace=False).as_matrix()
+                        ids = user_profiles['id'].tolist()
+                        user_profiles = user_profiles.drop(['id'], axis=1, inplace=False).as_matrix()
                 else:
-                    ids = range(X.shape[0])
-                    X = X.as_matrix()
+                    ids = range(user_profiles.shape[0])
+                    user_profiles = user_profiles.as_matrix()
         else:
-            msg = "X must be either numpy.ndarray or pandas.DataFrame"
+            msg = "user_profiles must be either numpy.ndarray or pandas.DataFrame"
             raise ValueError(msg)
 
-        return ids, X
+        return ids, user_profiles
 
 
-    def _fit(self, X, S, user_ids=None, D=None):
-        """ Fit the model with given information: X, S, D
+    def _fit(self, user_ids, user_profiles, S, D=None):
+        """ Fit the model with given information: user_profiles, S, D
 
         Fit the learning distance metrics: (1) if only S is given, all pairs of
-        items in X but not in S are considered as in D; (2) if both S and D
-        given, items in X but neither in S nor in D will be removed from
+        items in user_profiles but not in S are considered as in D; (2) if both S and D
+        given, items in user_profiles but neither in S nor in D will be removed from
         fitting process.
 
         Parameters:
         ----------
         user_id: {vector-like}, user
-        X: {matrix-like, np.array}, shape (n_sample, n_features) matrix of
+        user_profiles: {matrix-like, np.array}, shape (n_sample, n_features) matrix of
            observations with 1st column keeping observation ID
         S: {vector-like, list} a list of tuples which define a pair of data
            points known as similiar
@@ -145,31 +143,31 @@ class LDM(object):
         _ratio: float
         """
 
-        ids, X = self._data_validator(X=X, user_ids=user_ids)
-        n_sample, n_features = X.shape
+        user_ids, user_profiles = self._data_validator(user_profiles=user_profiles, user_ids=user_ids)
+        n_sample, n_features = user_profiles.shape
 
         bnds = [(0, None)] * n_features  # boundaries
         init = [1] * n_features  # initial weights
 
         if D == None:
-            all_pairs = [p for p in combinations(ids, 2)]
+            all_pairs = [p for p in combinations(user_ids, 2)]
             D = get_exclusive_pairs(all_pairs, S)
         else:
             # if D is provided, keep only users being
             # covered either by S or D
             covered_items = get_unique_items(S, D)
-            keep_items = [find_index(i, ids) for i in ids \
+            keep_items = [find_index(i, user_ids) for i in user_ids \
                 if i in covered_items]
-            X = X[keep_items, :]
+            user_profiles = user_profiles[keep_items, :]
 
-        # Convert ids in D and S into row index, in order to provide them to
+        # Convert user_ids in D and S into row index, in order to provide them to
         # a set of two distance functions, squared_sum_grouped_dist() and
         # sum_grouped_dist()
-        S_idx = [(find_index(a, ids), find_index(b, ids)) for (a, b) in S]
-        D_idx = [(find_index(a, ids), find_index(b, ids)) for (a, b) in D]
+        S_idx = [(find_index(a, user_ids), find_index(b, user_ids)) for (a, b) in S]
+        D_idx = [(find_index(a, user_ids), find_index(b, user_ids)) for (a, b) in D]
         # [ [a, b] for a, b in g.edges() if a in sample_user_ids or b in sample_user_ids ]
 
-        grouped_distance_container = WeightedDistanceTester(X, S_idx, D_idx)
+        grouped_distance_container = WeightedDistanceTester(user_ids, user_profiles, S_idx, D_idx)
 
         def objective_func(w):
             return grouped_distance_container.update(w)
@@ -178,11 +176,11 @@ class LDM(object):
             try:
                 print( "Examples of S: %s" % S[:5], len(S) )
                 print( "Examples of D: %s" % D[:5], len(D) )
-                print( "Examples of X: %s" % X[:5, :], X.shape )
+                print( "Examples of user_profiles: %s" % user_profiles[:5, :], user_profiles.shape)
             except:
                 print( "Examples of S: %s" % S, len(S) )
                 print( "Examples of D: %s" % D, len(D) )
-                print( "Examples of X: %s" % X, X.shape )
+                print( "Examples of user_profiles: %s" % user_profiles, user_profiles.shape)
 
         start_time = time.time()
         fitted = minimize(objective_func, init, method=self._solver_method, bounds=bnds)
@@ -197,30 +195,30 @@ class LDM(object):
         self._ratio = fitted['fun'] / objective_func(init)
         self._dist_func = lambda x, y: weighted_euclidean(x, y, w)
 
-        return (self._transform_matrix, self._ratio)
+        return self._transform_matrix, self._ratio
 
-    def transform(self, X, user_ids=None):
-        """ Tranform X by the learned tranformation matrix (A)
+    def transform(self, user_profiles):
+        """ Tranform user_profiles by the learned tranformation matrix (A)
 
         Parameters:
         -----------
-        X: {matrix-like, np.array}, shape (n_sample, n_features)
+        user_profiles: {matrix-like, np.array}, shape (n_sample, n_features)
            Training data, where n_samples is the number of n_samples
            and n_features is the number of features
 
         Returns:
         --------
         X_new: {marix-like, np.array}, shape (n_sample, n_features)
-               The return of X transformed by fitted matrix A
+               The return of user_profiles transformed by fitted matrix A
         """
-        ids, X = self._data_validator(X, user_ids)
-        n_sample, n_features = X.shape
+        n_sample, n_features = user_profiles.shape
         trans_matrix = self._transform_matrix
+
         if len(trans_matrix) != n_features:
             raise ValueError("Transformation matrix is not",
-                "compatiable with X!")
-        X_new = self._transform_matrix * X
-        return X_new
+                             "compatiable with user_profiles!")
+
+        return self._transform_matrix * user_profiles
 
     def get_transform_matrix(self):
         """ Returned the fitted transformation matrix (A)
@@ -242,7 +240,9 @@ class LDM(object):
         if self._transform_matrix is not None:
             w = self._transform_matrix
             g = lambda x, y: weighted_euclidean(x, y, w)
-        return g(x, y)
+            return g(x, y)
+        else:
+            None
 
     def get_ratio(self):
         """The ratio of aggregate metrics of similiar points
