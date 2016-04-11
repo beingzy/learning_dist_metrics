@@ -38,8 +38,7 @@ class LDM(object):
 
     VERSION = "0.2"
 
-    def __init__(self, solver_method="SLSQP", report_excution_time=True,
-                 is_debug=False):
+    def __init__(self, solver_method="SLSQP", is_debug=False):
 
         if not solver_method in ["L-BFGS-B", "SLSQP"]:
             raise ValueError("Only support \"L-BFGS-B\" or \"SLSQP\"!")
@@ -47,7 +46,6 @@ class LDM(object):
         self._solver_method = solver_method
         self._transform_matrix = np.array([])
         self._ratio = 1
-        self._report_excution_time = report_excution_time
         self._is_debug = is_debug
 
     def fit(self, user_ids, user_profiles, S, D=None):
@@ -186,7 +184,7 @@ class LDM(object):
         fitted = minimize(objective_func, init, method=self._solver_method, bounds=bnds)
         duration = time.time() - start_time
 
-        if self._report_excution_time:
+        if self._is_debug:
             print("--- %.2f seconds ---" % duration)
 
         w = self._transform_matrix
