@@ -32,8 +32,8 @@ class test_learing_metric(unittest.TestCase):
  
     def test_weighted_distance(self):
         test_weights = [2, 2, 1, 1]
-        scaled_x1 = [ w * v for w, v in zip(test_weights, self.x1) ]
-        scaled_x2 = [ w * v for w, v in zip(test_weights, self.x2) ]
+        scaled_x1 = [sqrt(w) * v for w, v in zip(test_weights, self.x1)]
+        scaled_x2 = [sqrt(w) * v for w, v in zip(test_weights, self.x2)]
         ref_res = euclidean(scaled_x1, scaled_x2)
         test_res = weighted_euclidean(self.x1, self.x2, test_weights)
         self.assertEqual(test_res, ref_res)
