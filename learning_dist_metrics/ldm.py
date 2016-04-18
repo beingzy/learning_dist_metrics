@@ -12,8 +12,6 @@ import pandas as pd
 from scipy.optimize import minimize
 from numpy.random import choice
 
-from learning_dist_metrics.dist_metrics import squared_sum_grouped_dist
-from learning_dist_metrics.dist_metrics import sum_grouped_dist
 from learning_dist_metrics.dist_metrics import weighted_euclidean
 from learning_dist_metrics.dist_metrics import WeightedDistanceTester
 
@@ -49,7 +47,7 @@ class LDM(object):
         self._ratio = 1
         self._is_debug = is_debug
 
-    def fit(self, user_ids, user_profiles, S, D=None):
+    def fit(self, user_ids, user_profiles, S, D=None, is_directed=False):
         """Fit the model with X and given S and D
 
         Parameters:
@@ -61,6 +59,9 @@ class LDM(object):
                   data points known as similiar
         D: {vector-like, list} a list of tuples which define a pair of
                   data points known as different
+        is_directed: {boolean},
+            False (default), connections formed am undirected graph
+            True, connections formed a directed graph
 
         Returns:
         --------
@@ -68,9 +69,9 @@ class LDM(object):
                A transformation matrix (A)
         _ratio: float
         """
-        self._fit(user_ids, user_profiles, S, D)
+        self._fit(user_ids, user_profiles, S, D, is_directed)
 
-    def fit_transform(self, user_ids, user_profiles, S, D=None):
+    def fit_transform(self, user_ids, user_profiles, S, D=None, is_directed=False):
         """ Fit the model with X, S, D and conduct transformation on X
 
         Parameters:
@@ -78,13 +79,16 @@ class LDM(object):
         X: {matrix-like, np.array}, shape (n_sample, n_features)
             Training data, where n_samples is the number of n_samples
             and n_features is the number of features
+        is_directed: {boolean},
+            False (default), connections formed am undirected graph
+            True, connections formed a directed graph
 
         Returns:
         --------
         X_new: {marix-like, np.array}, shape (n_sample, n_features)
             The return of X transformed by fitted matrix A
         """
-        self.fit(user_ids, user_profiles, S, D)
+        self.fit(user_ids, user_profiles, S, D, is_directed)
         return self.transform(user_profiles)
 
     def _data_validator(self, user_profiles, user_ids=None):
@@ -117,7 +121,7 @@ class LDM(object):
         return ids, user_profiles
 
 
-    def _fit(self, user_ids, user_profiles, S, D=None):
+    def _fit(self, user_ids, user_profiles, S, D=None, is_directed=False):
         """ Fit the model with given information: user_profiles, S, D
 
         Fit the learning distance metrics: (1) if only S is given, all pairs of
@@ -134,6 +138,9 @@ class LDM(object):
            points known as similiar
         D: {vector-like, list} a list of tuples which define a pair of data
            points known as different
+        is_directed: {boolean},
+            False (default), connections formed am undirected graph
+            True, connections formed a directed graph
 
         Returns:
         --------
@@ -157,7 +164,7 @@ class LDM(object):
                 samp_idx = choice(range(len(D)), size=sample_size, replace=False)
                 all_pairs = [all_pairs[idx] for idx in samp_idx]
 
-            D = get_exclusive_pairs(all_pairs, S)
+            D = get_exclusive_pairs(all_pairs, S, is_directed)
         else:
             # if D is provided, keep only users being
             # covered either by S or D
@@ -179,13 +186,13 @@ class LDM(object):
 
         if self._is_debug:
             try:
-                print( "Examples of S: %s" % S[:5], len(S) )
-                print( "Examples of D: %s" % D[:5], len(D) )
-                print( "Examples of user_profiles: %s" % user_profiles[:5, :], user_profiles.shape)
+                print("Examples of S: %s" % S[:5], len(S))
+                print("Examples of D: %s" % D[:5], len(D))
+                print("Examples of user_profiles: %s" % user_profiles[:5, :], user_profiles.shape)
             except:
-                print( "Examples of S: %s" % S, len(S) )
-                print( "Examples of D: %s" % D, len(D) )
-                print( "Examples of user_profiles: %s" % user_profiles, user_profiles.shape)
+                print("Examples of S: %s" % S, len(S))
+                print("Examples of D: %s" % D, len(D))
+                print("Examples of user_profiles: %s" % user_profiles, user_profiles.shape)
 
         start_time = time.time()
         fitted = minimize(objective_func, init, method=self._solver_method, bounds=bnds)
