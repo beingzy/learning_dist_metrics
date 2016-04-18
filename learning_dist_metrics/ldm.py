@@ -10,6 +10,7 @@ from itertools import combinations
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
+from numpy.random import choice
 
 from learning_dist_metrics.dist_metrics import squared_sum_grouped_dist
 from learning_dist_metrics.dist_metrics import sum_grouped_dist
@@ -149,6 +150,13 @@ class LDM(object):
 
         if D == None:
             all_pairs = [p for p in combinations(user_ids, 2)]
+
+            # generate sampling
+            sample_size = 3 * len(S)
+            if len(D) > sample_size:
+                samp_idx = choice(range(len(D)), size=sample_size, replace=False)
+                all_pairs = [all_pairs[idx] for idx in samp_idx]
+
             D = get_exclusive_pairs(all_pairs, S)
         else:
             # if D is provided, keep only users being
@@ -163,7 +171,6 @@ class LDM(object):
         # sum_grouped_dist()
         S_idx = [(find_index(a, user_ids), find_index(b, user_ids)) for (a, b) in S]
         D_idx = [(find_index(a, user_ids), find_index(b, user_ids)) for (a, b) in D]
-        # [ [a, b] for a, b in g.edges() if a in sample_user_ids or b in sample_user_ids ]
 
         grouped_distance_container = WeightedDistanceTester(user_ids, user_profiles, S_idx, D_idx)
 
@@ -284,7 +291,7 @@ def get_exclusive_pairs(target_pairs, reference_pairs, is_directed=False):
 
     keep_idx = [ii for ii, signature in enumerate(target_pairs_str) \
                 if not (signature in reference_pairs_str)]
-    
+
     return [target_pairs[idx] for idx in keep_idx]
 
 
