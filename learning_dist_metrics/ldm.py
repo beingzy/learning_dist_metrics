@@ -249,7 +249,7 @@ class LDM(object):
         return self._ratio
 
 
-def get_exclusive_pairs(target_pairs, reference_pairs):
+def get_exclusive_pairs(target_pairs, reference_pairs, is_directed=False):
     """ Remove from target_paris the item (pairs) which
         has matches in reference_pairs.
 
@@ -257,16 +257,34 @@ def get_exclusive_pairs(target_pairs, reference_pairs):
     -----------
     target_pairs: {list}, [(1, 2), (1, 3), ...]
     reference_pairs: {list}, [(2, 1), (10, 11)]
+    is_directed: {boolean},
+        False (default), connections formed am undirected graph
+        True, connections formed a directed graph
 
     Returns:
     -------
     """
-    res_pairs = target_pairs[:]
-    for ref_pair in reference_pairs:
-        for tgt_pair in res_pairs:
-            if set(ref_pair) == set(tgt_pair):
-                res_pairs.remove(tgt_pair)
-                break
+
+    def sorted_pairs_str(a, b):
+        if a > b:
+            return str(b), str(a)
+        else:
+            return str(a), str(b)
+
+    def pairs_str(a, b):
+        return str(a), str(b)
+
+    if is_directed:
+        # directed graph
+        target_pairs_str = [" ".join(pairs_str(a, b)) for (a, b) in target_pairs]
+        reference_pairs_str = [" ".join(pairs_str(a, b)) for (a, b) in reference_pairs]
+    else:
+        target_pairs_str = [" ".join(sorted_pairs_str(a, b)) for (a, b) in target_pairs]
+        reference_pairs_str = [" ".join(sorted_pairs_str(a, b)) for (a, b) in reference_pairs]
+
+    keep_idx = [ii for ii, signature in enumerate(target_pairs_str) \
+                if not (signature in reference_pairs_str)]
+    res_pairs = [target_pairs[idx] for idx in keep_idx]
     return res_pairs
 
 
