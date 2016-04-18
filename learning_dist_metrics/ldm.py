@@ -284,8 +284,9 @@ def get_exclusive_pairs(target_pairs, reference_pairs, is_directed=False):
 
     keep_idx = [ii for ii, signature in enumerate(target_pairs_str) \
                 if not (signature in reference_pairs_str)]
-    res_pairs = [target_pairs[idx] for idx in keep_idx]
-    return res_pairs
+    
+    return [target_pairs[idx] for idx in keep_idx]
+
 
 
 def get_unique_items(x_pairs, y_pairs):
