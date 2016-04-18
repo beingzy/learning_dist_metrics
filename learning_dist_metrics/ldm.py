@@ -160,7 +160,7 @@ class LDM(object):
 
             # generate sampling
             sample_size = 3 * len(S)
-            if len(D) > sample_size:
+            if len(all_pairs) > sample_size:
                 samp_idx = choice(range(len(D)), size=sample_size, replace=False)
                 all_pairs = [all_pairs[idx] for idx in samp_idx]
 
