@@ -161,7 +161,7 @@ class LDM(object):
             # generate sampling
             sample_size = 3 * len(S)
             if len(all_pairs) > sample_size:
-                samp_idx = choice(range(len(D)), size=sample_size, replace=False)
+                samp_idx = choice(range(len(all_pairs)), size=sample_size, replace=False)
                 all_pairs = [all_pairs[idx] for idx in samp_idx]
 
             D = get_exclusive_pairs(all_pairs, S, is_directed)
