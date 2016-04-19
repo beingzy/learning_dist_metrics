@@ -40,8 +40,9 @@ class GeneralDistanceWrapper(object):
     def fit(self, x):
         """ automate the detection of categoricay variables
         """
-        cat_data_types = [bool, str, object]
+        # cat_data_types = [bool, str, object]
         null_val_symbols = [np.nan, None, 'nan', 'null', 'None', 'N/A', '']
+        category_dtypes = [str, bool, object, np.str_]
 
         def return_nonull_values(x):
             nonull_idx = [ii for ii, val in enumerate(x) \
@@ -49,14 +50,14 @@ class GeneralDistanceWrapper(object):
             return [x[idx] for idx in nonull_idx]
 
         def detect_num_vs_cat(val):
-            if type(val) in cat_data_types:
-                return True
-            else:
+            try:
+                float(val)
                 return False
+            except:
+                return True
 
         if isinstance(x, list):
             cat_idx = [ii for ii, val in enumerate(x) if detect_num_vs_cat(val)]
-            self._cat_idx = cat_idx
 
         if isinstance(x, ndarray):
             _, n_feats = x.shape
@@ -69,8 +70,6 @@ class GeneralDistanceWrapper(object):
                     if detect_num_vs_cat(val):
                         cat_idx.append(ii)
 
-            self._cat_idx = cat_idx
-
         if isinstance(x, DataFrame):
             _, n_feats = x.shape
             cat_idx = []
@@ -82,10 +81,11 @@ class GeneralDistanceWrapper(object):
                     if detect_num_vs_cat(val):
                         cat_idx.append(ii)
 
-            self._cat_idx = cat_idx
             all_feat_names = x.columns
             cat_feat_names = [feat_name for ii, feat_name in enumerate(all_feat_names) if ii in cat_idx]
             self.set_features(all_feat_names=all_feat_names, cat_feat_names=cat_feat_names)
+
+        self._cat_idx = cat_idx
 
 
     def set_features(self, all_feat_names, cat_feat_names):
