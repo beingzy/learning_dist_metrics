@@ -4,6 +4,7 @@ Collection of Distance Metrics
 import pandas as pd
 import numpy as np
 from numpy import sqrt
+from distance_metrics.GeneralDistanceWrapper import GeneralDistanceWrapper
 
 
 def weighted_euclidean(x, y, w=None):
@@ -129,35 +130,55 @@ def squared_sum_grouped_dist(pair_list, data, weights=None):
     for pair in pair_list:
         dist = pairwise_dist_wrapper(pair, data, weights)
         sum_squared_dist += dist * dist
-    #dist = all_pairwise_dist(pair_list, data, weights)
-    #dist_squared = [d * d for d in dist]
-    #return sum(dist_squared)
     return sum_squared_dist
 
 
 class WeightedDistanceTester(object):
 
     def __init__(self, user_ids, user_profiles, sim_edges, diff_edges):
+        self._general_dist_wrapper = GeneralDistanceWrapper()
+        self._general_dist_wrapper.fit(user_profiles)
         self._sim_dist_array = self._get_1d_squared_diff(sim_edges, user_ids, user_profiles)
         self._diff_dist_array = self._get_1d_squared_diff(diff_edges, user_ids, user_profiles)
 
     def _get_1d_squared_diff(self, edges, user_ids, user_profiles):
         n_obs, n_feat = len(edges), user_profiles.shape[1]
         dist_1ds = np.empty((n_obs, n_feat))
+        is_warned = False
+
         if isinstance(user_profiles, np.ndarray):
-            for ii, e in enumerate(edges):
-                a_idx = [i for i, uid in enumerate(user_ids) if uid == e[0]]
-                b_idx = [i for i, uid in enumerate(user_ids) if uid == e[1]]
-                dist_1ds[ii, :] = user_profiles[a_idx, :] - user_profiles[b_idx, :]
+            for ii, (a_idx, b_idx) in enumerate(edges):
+                try:
+                    #a_idx = [i for i, uid in enumerate(user_ids) if uid == e[0]]
+                    #b_idx = [i for i, uid in enumerate(user_ids) if uid == e[1]]
+                    a_profile = user_profiles[a_idx, :]
+                    b_profile = user_profiles[b_idx, :]
+                    dist_1ds[ii, :] = self._general_dist_wrapper.get_difference(a_profile, b_profile)
+                except:
+                    dist_1ds[ii, :] = np.nan
+                    is_warned = True
+
         elif isinstance(user_profiles, pd.DataFrame):
-            for ii, e in enumerate(edges):
-                a_idx = [i for i, uid in enumerate(user_ids) if uid == e[0]]
-                b_idx = [i for i, uid in enumerate(user_ids) if uid == e[1]]
-                dist_1ds[ii, :] = user_profiles.iloc[a_idx, :] - user_profiles.iloc[b_idx, :]
+            for ii, (a_idx, b_idx) in enumerate(edges):
+                try:
+                    #a_idx = [i for i, uid in enumerate(user_ids) if uid == e[0]]
+                    #b_idx = [i for i, uid in enumerate(user_ids) if uid == e[1]]
+                    a_profile = user_profiles[a_idx, :]
+                    b_profile = user_profiles[b_idx, :]
+                    dist_1ds[ii, :] = self._general_dist_wrapper(a_profile, b_profile)
+                except:
+                    dist_1ds[ii, :] = np.nan
+                    is_warned = True
         else:
             msg = " ".join(["user_profiles is in unsupported data structures",
                             "(it must be numpy.ndarray or pandas.DataFrame)!"])
             raise ValueError(msg)
+
+        if is_warned:
+            bool_idx = np.isnan(dist_1ds[:, 0]).tolist()
+            idx = [i for i, val in enumerate(bool_idx) if val == False]
+            dist_1ds = dist_1ds[idx, :]
+
         return dist_1ds
 
     def _get_sim_agg_info(self, weights):
