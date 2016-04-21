@@ -201,10 +201,19 @@ class LDM(object):
         if self._is_debug:
             print("--- %.2f seconds ---" % duration)
 
-        w = self._transform_matrix
-        self._transform_matrix = vec_normalized(fitted['x'])
         # optimized value vs. value of initial setting
-        self._ratio = fitted['fun'] / objective_func(init)
+        try:
+            self._transform_matrix = vec_normalized(fitted['x'])
+            w = self._transform_matrix
+            self._ratio = fitted['fun'] / objective_func(init)
+        except:
+            self._transform_matrix = init
+            w = self._transform_matrix
+            self._ratio = None
+            msg = ["WARNING!", "information (S) is not sufficient to induce distance leanring metrics! ",
+                   "resort to unweigthed distance metrics."]
+            print(msg)
+
         self._dist_func = lambda x, y: weighted_euclidean(x, y, w)
 
         return self._transform_matrix, self._ratio
