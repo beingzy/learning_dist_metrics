@@ -36,9 +36,10 @@ ldm.fit(sample_data.data, sample_data.sim_pairs, sample_data.diff_pairs)
 ![3D Scatterplots of 2 Clusters in the original space](/doc/images/2clusters_3d_origin.png)
 ![3D Scatterplots of 2 Clusters in the transformed Space](/doc/images/2clusters_3d_fitted.png)
 
-Import Features:
+## Import Features:
 * `GeneralDistanceWrapper` calculates weighted euclidean distance between two
 instances. It supports capability of dealing with instances having either/ all of numerical, categorical values and missing values.
+
 ```python
 from distance_metrics import GeneralDistanceWrapper
 
