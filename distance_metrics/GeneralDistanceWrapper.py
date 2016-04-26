@@ -32,7 +32,7 @@ class GeneralDistanceWrapper(object):
     xydist_weighted = dist_func(x, y)
     """
 
-    def __init__(self, category_index=None, null_val=0):
+    def __init__(self, category_index=None, null_val=0.5):
         self._cat_idx = category_index
         self.load_weights()
         self._null_val = null_val
@@ -132,18 +132,23 @@ class GeneralDistanceWrapper(object):
             raise ValueError("vector (a) is in different size of vector (b)!")
         a_num, a_cat = self.decompose(a)
         b_num, b_cat = self.decompose(b)
-        num_diff = [a - b for a, b in zip(a_num, b_num)]
-        cat_diff = [0 if a == b else 1 for a, b in zip(a_cat, b_cat)]
 
-        if np.isnan(num_diff).sum() > 0:
-            num_diff = np.array(num_diff)
-            num_diff[np.isnan(num_diff)] = self._null_val
-            num_diff = num_diff.tolist()
+        num_diff = [0] * len(a_num)
+        for ii, (a, b) in enumerate(zip(a_num, b_num)):
+            if _is_null_value(a) or _is_null_value(b):
+                num_diff[ii] = self._null_val
+            else:
+                num_diff[ii] = a - b
 
-        if np.isnan(cat_diff).sum() > 0:
-            cat_diff = np.array(cat_diff)
-            cat_diff[np.isnan(cat_diff)] = self._null_val
-            cat_diff = cat_diff.tolist()
+        cat_diff = [0] * len(a_cat)
+        for ii, (a, b) in enumerate(zip(a_cat, b_cat)):
+            if _is_null_value(a) or _is_null_value(b):
+                cat_diff[ii] = self._null_val
+            else:
+                if a == b:
+                    cat_diff[ii] = 0
+                else:
+                    cat_diff[ii] = 1
 
         return (num_diff, cat_diff)
 
@@ -162,3 +167,11 @@ class GeneralDistanceWrapper(object):
                 return sqrt(sum([w * val * val for w, val in zip(self._weights, diff)]))
             else:
                 raise ValueError("weights must be in same size with input vector (a, b)!")
+
+
+def _is_null_value(x):
+    null_val_symbols = [np.nan, None, '', 'N/A']
+    if x in null_val_symbols:
+        return True
+    else:
+        return False
